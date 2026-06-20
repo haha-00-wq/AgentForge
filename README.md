@@ -37,6 +37,9 @@ OPENROUTER_API_KEY=
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 LANGSMITH_TRACING=false
 LANGSMITH_API_KEY=
+SQLITE_PATH=data/osintbase.db
+POSTGRES_DSN=
+REDIS_URL=
 ```
 
 `LLM_PROVIDER` 可切换为 `openai`、`openrouter`、`anthropic` 或 `ollama`。真实 provider 的客户端依赖放在可选 extras 中，例如 `pip install -e ".[openai]"`。
@@ -68,7 +71,84 @@ curl http://127.0.0.1:8000/workflows
 curl -X POST http://127.0.0.1:8000/workflows/intel_analysis_v1/run \
   -H "Content-Type: application/json" \
   -d '{"event_text":"Acme Corp opened a new lab in Berlin on Monday."}'
+curl -X POST http://127.0.0.1:8000/workflows/human_review_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"run_id":"r1","content":"Needs review"}'
 ```
+
+## 平台扩展能力
+
+第二阶段已加入本地优先的扩展模块。默认实现不依赖外部服务，适合作为业务项目的可替换底座。
+
+### RAG
+
+- 模块：`app/rag/`
+- 默认实现：`SimpleEmbeddingModel` + `InMemoryVectorStore`
+- 示例插件：`plugins/tools/retrieval_tool.py`
+
+业务可以先用内存向量库跑通检索流程，后续再把 `InMemoryVectorStore` 替换为 Chroma、FAISS、Milvus 或其他向量库。
+
+### Memory
+
+- 模块：`app/memory/`
+- 默认实现：`InMemoryMemoryStore`
+- 能力：session state、long-term memory、user profile
+
+适合保存对话状态、长期偏好、用户画像等 Agent 上下文信息。生产环境可以替换为数据库或 Redis 实现。
+
+### Tracing
+
+- 模块：`app/observability/tracing.py`
+- 入口：`trace_run()` 和 `configure_tracing()`
+- 默认行为：`LANGSMITH_TRACING=false` 时 no-op
+
+开启 LangSmith 时，配置 `.env`：
+
+```bash
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your-key
+```
+
+### Evaluation
+
+- 模块：`app/evaluation/`
+- 支持：JSONL dataset、评分器、批量评估 CLI
+
+示例命令：
+
+```bash
+python -m app.evaluation.cli examples/evaluation/sample.jsonl --field label
+```
+
+### Human-in-the-loop
+
+- 示例 workflow：`plugins/workflows/human_review_workflow.py`
+- workflow id：`human_review_v1`
+- 行为：没有 approval 时返回 `pending`，传入 approval 后返回审核结果。
+
+Pending 示例：
+
+```bash
+curl -X POST http://127.0.0.1:8000/workflows/human_review_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"run_id":"r1","content":"Needs review"}'
+```
+
+Resume 示例：
+
+```bash
+curl -X POST http://127.0.0.1:8000/workflows/human_review_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"run_id":"r1","content":"Needs review","approval":{"approved":true,"reviewer":"alice"}}'
+```
+
+### Persistence
+
+- 模块：`app/persistence/`
+- 默认实现：`SQLitePersistenceStore`
+- 能力：run 记录、cache、queue
+
+SQLite 用作默认本地持久化，Postgres 和 Redis 作为后续生产实现的替换方向。
 
 ## 如何新增 Agent
 
@@ -109,9 +189,9 @@ conda run -n osintbase pytest
 
 ## 扩展路线图
 
-- RAG：增加向量库抽象和检索插件。
-- Memory：增加会话状态、长期记忆和用户画像存储。
-- Tracing：接入 LangSmith run tracing。
-- Evaluation：扩展数据集、评分器和批量评估 CLI。
-- Human-in-the-loop：基于 LangGraph interrupt/resume 增加人工审核节点。
-- Persistence：增加 SQLite/Postgres/Redis 支持运行状态、缓存和队列。
+- RAG：接入 Chroma、FAISS、Milvus 等真实向量库。
+- Memory：增加数据库和 Redis 后端。
+- Tracing：补充更细粒度的 LangSmith run metadata。
+- Evaluation：增加 LLM-as-judge、回归评估报告和 CI 集成。
+- Human-in-the-loop：接入真实审批 API、通知和恢复令牌。
+- Persistence：增加 Postgres/Redis 生产实现。

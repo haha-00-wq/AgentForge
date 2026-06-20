@@ -16,4 +16,6 @@ class Settings(BaseSettings):
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     langsmith_tracing: bool = False
     langsmith_api_key: str | None = None
-
+    sqlite_path: str = "data/osintbase.db"
+    postgres_dsn: str | None = None
+    redis_url: str | None = None

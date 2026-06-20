@@ -1,0 +1,2 @@
+{"case_id":"sample-1","input":{"text":"Acme Corp opened a Berlin lab"},"expected":{"label":"supported"},"actual":{"label":"supported"}}
+{"case_id":"sample-2","input":{"text":"Unverified claim"},"expected":{"label":"unsupported"},"actual":{"label":"supported"}}

@@ -5,7 +5,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
-Status = Literal["success", "error"]
+Status = Literal["success", "error", "pending"]
 
 
 class Evidence(BaseModel):
@@ -51,4 +51,3 @@ class EvaluationResult(BaseModel):
     status: Status = "success"
     score: float = Field(default=1.0, ge=0.0, le=1.0)
     details: dict[str, Any] = Field(default_factory=dict)
-
