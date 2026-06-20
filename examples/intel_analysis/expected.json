@@ -1,0 +1,10 @@
+{
+  "workflow_id": "intel_analysis_v1",
+  "status": "success",
+  "data": {
+    "review": {
+      "supported": true
+    }
+  }
+}
+
