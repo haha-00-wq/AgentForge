@@ -7,5 +7,12 @@ router = APIRouter()
 
 @router.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    """健康检查接口。
 
+    入参:
+        无。
+
+    出参:
+        dict[str, str]: 固定返回 {"status": "ok"}。
+    """
+    return {"status": "ok"}
