@@ -8,7 +8,7 @@ from app.evaluation.evaluator import ExactMatchScorer, run_batch_evaluation
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run OSINTBase batch evaluation.")
+    parser = argparse.ArgumentParser(description="Run AgentForge batch evaluation.")
     parser.add_argument("dataset", help="Path to a JSONL evaluation dataset.")
     parser.add_argument("--field", default="label", help="Field name to compare in expected and actual.")
     args = parser.parse_args()

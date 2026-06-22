@@ -29,7 +29,7 @@ def load_tools() -> ToolRegistry:
             [
                 Document(
                     id="default-intel-1",
-                    content="OSINTBase supports LangGraph workflows, RAG retrieval, and structured evaluation.",
+                    content="AgentForge supports LangGraph workflows, RAG retrieval, and structured evaluation.",
                     metadata={"source": "builtin"},
                 )
             ]

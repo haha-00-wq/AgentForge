@@ -7,7 +7,7 @@ from app.core.bootstrap import bootstrap
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="OSINTBase", version="0.1.0")
+    app = FastAPI(title="AgentForge", version="0.1.0")
     app.state.container = bootstrap()
     app.include_router(routes_health.router)
     app.include_router(routes_agents.router)

@@ -1,4 +1,4 @@
-name: osintbase
+name: agentforge
 channels:
   - conda-forge
 dependencies:

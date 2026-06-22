@@ -2,7 +2,7 @@
 
 ## 背景
 
-OSINTBase 第一阶段已经具备 Agent、Tool、Workflow、Prompt、LLM 工厂、协议模型、FastAPI 和情报分析示例。第二阶段要把 README 路线图中的 RAG、Memory、Tracing、Evaluation、Human-in-the-loop 和 Persistence 加进平台层，但仍保持默认可本地运行、可测试、无外部服务强依赖。
+AgentForge 第一阶段已经具备 Agent、Tool、Workflow、Prompt、LLM 工厂、协议模型、FastAPI 和情报分析示例。第二阶段要把 README 路线图中的 RAG、Memory、Tracing、Evaluation、Human-in-the-loop 和 Persistence 加进平台层，但仍保持默认可本地运行、可测试、无外部服务强依赖。
 
 ## 设计原则
 
@@ -84,4 +84,3 @@ Postgres/Redis 暂以配置字段和抽象接口保留，不在 MVP 中引入驱
 ## 交付边界
 
 本阶段不引入 Chroma、FAISS、Milvus、Postgres、Redis 的真实客户端依赖；只提供可替换接口、配置字段和本地默认实现。这样第二阶段仍然是可运行脚手架，而不是依赖外部基础设施的半成品。
-
