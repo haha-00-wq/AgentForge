@@ -61,6 +61,17 @@ ResearchAgent -> AnalystAgent -> ReviewerAgent
 
 输入一段事件文本后，ResearchAgent 提取实体和证据，AnalystAgent 生成结构化判断，ReviewerAgent 检查判断是否有证据支持。
 
+当前已覆盖的 LangGraph 编排模式：
+
+| workflow_id | 场景 | 说明 |
+| --- | --- | --- |
+| `single_research_v1` | 单 Agent | `ResearchAgent -> END`，最小可复制模板。 |
+| `intel_analysis_v1` | 顺序多 Agent | `ResearchAgent -> AnalystAgent -> ReviewerAgent`。 |
+| `conditional_intel_v1` | 条件分支 | Research 后通过 `add_conditional_edges` 路由到分析或人工审核。 |
+| `agent_router_v1` | Agent 决策路由 | `RouterAgent` 输出下一跳，Workflow 根据 Agent 决策走分支。 |
+| `parallel_intel_v1` | 并行 fan-out/fan-in | Research 后并行执行实体、风险、来源检查，再 join 汇总。 |
+| `human_review_v1` | Human-in-the-loop | 无 approval 时返回 `pending`，传入 approval 后恢复。 |
+
 ## API 示例
 
 ```bash
@@ -74,7 +85,26 @@ curl -X POST http://127.0.0.1:8000/workflows/intel_analysis_v1/run \
 curl -X POST http://127.0.0.1:8000/workflows/human_review_v1/run \
   -H "Content-Type: application/json" \
   -d '{"run_id":"r1","content":"Needs review"}'
+curl -X POST http://127.0.0.1:8000/workflows/conditional_intel_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"event_text":"Acme Corp opened a Berlin lab. needs human review"}'
+curl -X POST http://127.0.0.1:8000/workflows/agent_router_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"event_text":"Acme Corp opened a Berlin lab.","route_hint":"analyze"}'
+curl -X POST http://127.0.0.1:8000/workflows/parallel_intel_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"event_text":"Acme Corp opened a Berlin lab."}'
 ```
+
+## Workflow 编排封装
+
+平台层提供三类 LangGraph builder：
+
+- `run_sequential_graph()`：顺序节点，适合固定流程。
+- `build_conditional_graph()`：条件分支，封装 `add_conditional_edges`。
+- `build_parallel_join_graph()`：并行 fan-out/fan-in，适合多角度分析后汇总。
+
+业务开发者一般在 `plugins/workflows/` 中组合这些 builder，而不是直接在业务代码里重复写 LangGraph 样板代码。
 
 ## 平台扩展能力
 
