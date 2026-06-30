@@ -70,6 +70,7 @@ ResearchAgent -> AnalystAgent -> ReviewerAgent
 | `conditional_intel_v1` | 条件分支 | Research 后通过 `add_conditional_edges` 路由到分析或人工审核。 |
 | `agent_router_v1` | Agent 决策路由 | `RouterAgent` 输出下一跳，Workflow 根据 Agent 决策走分支。 |
 | `parallel_intel_v1` | 并行 fan-out/fan-in | Research 后并行执行实体、风险、来源检查，再 join 汇总。 |
+| `knowledge_base_qa_v1` | 知识库问答 | 从已上传知识库文件中检索切片并回答用户问题。 |
 | `human_review_v1` | Human-in-the-loop | 无 approval 时返回 `pending`，传入 approval 后恢复。 |
 
 ## API 示例
@@ -95,6 +96,39 @@ curl -X POST http://127.0.0.1:8000/workflows/parallel_intel_v1/run \
   -H "Content-Type: application/json" \
   -d '{"event_text":"Acme Corp opened a Berlin lab."}'
 ```
+
+## 知识库问答案例
+
+知识库案例由三部分组成：
+
+- 平台 store：`app/knowledge/`
+- 业务 Agent：`plugins/agents/knowledge_base_agent.py`
+- 业务 Workflow：`plugins/workflows/knowledge_base_workflow.py`
+
+上传 UTF-8 文本文件：
+
+```bash
+curl -X POST http://127.0.0.1:8000/knowledge/demo/files \
+  -F "file=@README.md"
+```
+
+查询知识库：
+
+```bash
+curl -X POST http://127.0.0.1:8000/knowledge/demo/query \
+  -H "Content-Type: application/json" \
+  -d '{"question":"AgentForge 支持哪些 workflow 编排模式？"}'
+```
+
+也可以通过 workflow 入口调用：
+
+```bash
+curl -X POST http://127.0.0.1:8000/workflows/knowledge_base_qa_v1/run \
+  -H "Content-Type: application/json" \
+  -d '{"kb_id":"demo","question":"AgentForge 支持什么？"}'
+```
+
+当前示例默认使用内存知识库和本地简单 embedding，适合演示和测试。生产环境可以把 `InMemoryKnowledgeBaseStore` 替换成持久化文档库和真实向量库。
 
 ## Workflow 编排封装
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api import routes_agents, routes_health, routes_tools, routes_workflows
+from app.api import routes_agents, routes_health, routes_knowledge, routes_tools, routes_workflows
 from app.core.bootstrap import bootstrap
 
 
@@ -21,6 +21,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_agents.router)
     app.include_router(routes_tools.router)
     app.include_router(routes_workflows.router)
+    app.include_router(routes_knowledge.router)
     return app
 
 
